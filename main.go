@@ -4,9 +4,10 @@ package main
 // imports to provide extenrnal functionality
 import (
 	"booking-app/helper"
-	"booking-app/sendingHelper"
+	// "booking-app/sendingHelper"
 	"fmt"
-	// "sync"
+	"sync"
+	"time"
 	// "strconv"
 	// "strings"
 )
@@ -37,7 +38,7 @@ type UserData struct {
 }
 
 // waitGroup 
-// var wg = sync.WaitGroup {}
+var wg = sync.WaitGroup {}
 
 // starting point of every application is main function
 func main() {
@@ -45,32 +46,33 @@ func main() {
 	greetUsers()
 
 	// infinite for loop to book tickets 
-	for {
+	// for {
 
-		firstName, lastName, email, userTickets := getUserInput()
+	firstName, lastName, email, userTickets := getUserInput()
 
-		isValidName, isValidEmail, isValidTicketNumber := helper.ValidateUserInput(firstName, lastName, email, userTickets, remainingTickets)
-		
-		if !isValidName || !isValidEmail || !isValidTicketNumber  {
-			if !isValidName {
-				fmt.Println("Your name / last name lenght must be at least 2 characters")
-			}
-
-			if !isValidEmail {
-				fmt.Println("Your email address must contain '@' symbol")
-			}
-
-			if !isValidTicketNumber {
-				fmt.Println("Your ticket number must be less or equal to remaining tickets number")
-			}
-			fmt.Println("Try one more time")
-			continue
+	isValidName, isValidEmail, isValidTicketNumber := helper.ValidateUserInput(firstName, lastName, email, userTickets, remainingTickets)
+	
+	if !isValidName || !isValidEmail || !isValidTicketNumber  {
+		if !isValidName {
+			fmt.Println("Your name / last name lenght must be at least 2 characters")
 		}
 
+		if !isValidEmail {
+			fmt.Println("Your email address must contain '@' symbol")
+		}
+
+		if !isValidTicketNumber {
+			fmt.Println("Your ticket number must be less or equal to remaining tickets number")
+		}
+		fmt.Println("Try one more time")
+		// continue
+	} else {
 		bookTicket(userTickets, firstName, lastName, email)
 
+		// adding thread to wait group
+		wg.Add(1)
 		// create thread by using 'go' keyword
-		go sendingHelper.SendTicket(userTickets, firstName, lastName, email)
+		go sendTicket(userTickets, firstName, lastName, email)
 
 		firstNames := getFirstNames()
 		fmt.Printf("All bokings: %v\n", firstNames)
@@ -79,9 +81,13 @@ func main() {
 		if remainingTickets == 0 {
 			// end program
 			fmt.Println("Our cinema is booked out. Come back next week")
-			break
+			// break
 		}
+
+		// wait for thread which was added above
+		wg.Wait()
 	}
+	// }
 }
 
 func greetUsers() {
@@ -141,5 +147,20 @@ func bookTicket(userTickets uint, firstName string, lastName string, email strin
 	fmt.Printf("Thank you %v %v for booking %v tickets. You will recieve a confirmation email at %v\n", firstName, lastName, userTickets, email)
 	fmt.Printf("%v tickets remaining for %v\n", remainingTickets, cinemaName)
 }
+
+func sendTicket(userTickets uint, firstName string, lastName string, email string) {
+	time.Sleep(5 * time.Second)
+	var ticket = fmt.Sprintf("%v tickets for %v %v", userTickets, firstName, lastName)
+	fmt.Println("####################")
+	fmt.Printf("Sending ticket:\n%v\nto email address %v\n", ticket, email)
+	fmt.Println("####################")
+	// remove thred from wait group
+	wg.Done()
+}
+
+// about concurrency:
+// - when we use 'go' keyword it creates "green thread" which is abstraction of low level threads
+// - it is managed by go routine, we are interaction only with high level stuff
+// - cheper and lightweight
 
 
