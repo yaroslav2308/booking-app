@@ -1,9 +1,12 @@
 // in golang projects everything get into packages
 package main
+
 // imports to provide extenrnal functionality
 import (
+	"booking-app/helper"
 	"fmt"
-	"strings"
+	"strconv"
+	// "strings"
 )
 
 // to print types of variables type %T
@@ -11,7 +14,7 @@ import (
 
 // varriables which were declared but not used are error
 
-// syntax sugar is using ':=' instead of 'var' 
+// syntax sugar is using ':=' instead of 'var'
 // (not working with consts and explicitly defined types)
 const cinemaTickets = 50
 var cinemaName = "cinema about Golang"
@@ -21,7 +24,15 @@ var remainingTickets uint = 50
 // var bookings [50]string
 
 // slice is below
-var bookings []string
+var bookings = make([]map[string]string, 0)
+
+// struct
+// type UserData struct {
+// 	firstName string
+// 	lastName string
+// 	email string
+// 	numberOfTickets uint
+// }
 
 // starting point of every application is main function
 func main() {
@@ -33,7 +44,7 @@ func main() {
 
 		firstName, lastName, email, userTickets := getUserInput()
 
-		isValidName, isValidEmail, isValidTicketNumber := validateUserInput(firstName, lastName, email, userTickets)
+		isValidName, isValidEmail, isValidTicketNumber := helper.ValidateUserInput(firstName, lastName, email, userTickets, remainingTickets)
 		
 		if !isValidName || !isValidEmail || !isValidTicketNumber  {
 			if !isValidName {
@@ -47,6 +58,7 @@ func main() {
 			if !isValidTicketNumber {
 				fmt.Println("Your ticket number must be less or equal to remaining tickets number")
 			}
+			fmt.Println("Try one more time")
 			continue
 		}
 		bookTicket(userTickets, firstName, lastName, email)
@@ -76,20 +88,10 @@ func getFirstNames() []string {
 	// for loop always need 2 values (index and element)
 	// we do not use index so it turns into underscore '_'
 	for _, booking := range bookings {
-		var names = strings.Fields(booking)
-		firstNames = append(firstNames, names[0])
+		firstNames = append(firstNames, booking["firstName"])
 	}
 
 	return firstNames
-}
-
-func validateUserInput(firstName string, lastName string, email string, userTickets uint) (bool, bool, bool) {
-	isValidName := len(firstName) >= 2 && len(lastName) >= 2
-	isValidEmail := strings.Contains(email, "@")
-	isValidTicketNumber := userTickets > 0 && userTickets <= remainingTickets
-	
-	// you can return any number of values
-	return isValidName, isValidEmail, isValidTicketNumber
 }
 
 func getUserInput() (string, string, string, uint) {
@@ -116,7 +118,15 @@ func getUserInput() (string, string, string, uint) {
 
 func bookTicket(userTickets uint, firstName string, lastName string, email string) {
 	remainingTickets = remainingTickets - userTickets
-	bookings = append(bookings, firstName + " " + lastName)
+	
+	// create a map for user
+	var userData = make(map[string]string)
+	userData["firstName"] = firstName
+	userData["lastName"] = lastName
+	userData["email"] = email
+	userData["numberOfTickets"] = strconv.FormatUint(uint64(userTickets), 10)
+
+	bookings = append(bookings, userData)
 
 	fmt.Printf("Thank you %v %v for booking %v tickets. You will recieve a confirmation email at %v\n", firstName, lastName, userTickets, email)
 	fmt.Printf("%v tickets remaining for %v\n", remainingTickets, cinemaName)
