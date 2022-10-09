@@ -4,8 +4,10 @@ package main
 // imports to provide extenrnal functionality
 import (
 	"booking-app/helper"
+	"booking-app/sendingHelper"
 	"fmt"
-	"strconv"
+	// "sync"
+	// "strconv"
 	// "strings"
 )
 
@@ -24,15 +26,18 @@ var remainingTickets uint = 50
 // var bookings [50]string
 
 // slice is below
-var bookings = make([]map[string]string, 0)
+var bookings = make([]UserData, 0)
 
 // struct
-// type UserData struct {
-// 	firstName string
-// 	lastName string
-// 	email string
-// 	numberOfTickets uint
-// }
+type UserData struct {
+	firstName string
+	lastName string
+	email string
+	numberOfTickets uint
+}
+
+// waitGroup 
+// var wg = sync.WaitGroup {}
 
 // starting point of every application is main function
 func main() {
@@ -61,7 +66,11 @@ func main() {
 			fmt.Println("Try one more time")
 			continue
 		}
+
 		bookTicket(userTickets, firstName, lastName, email)
+
+		// create thread by using 'go' keyword
+		go sendingHelper.SendTicket(userTickets, firstName, lastName, email)
 
 		firstNames := getFirstNames()
 		fmt.Printf("All bokings: %v\n", firstNames)
@@ -88,7 +97,7 @@ func getFirstNames() []string {
 	// for loop always need 2 values (index and element)
 	// we do not use index so it turns into underscore '_'
 	for _, booking := range bookings {
-		firstNames = append(firstNames, booking["firstName"])
+		firstNames = append(firstNames, booking.firstName)
 	}
 
 	return firstNames
@@ -120,14 +129,17 @@ func bookTicket(userTickets uint, firstName string, lastName string, email strin
 	remainingTickets = remainingTickets - userTickets
 	
 	// create a map for user
-	var userData = make(map[string]string)
-	userData["firstName"] = firstName
-	userData["lastName"] = lastName
-	userData["email"] = email
-	userData["numberOfTickets"] = strconv.FormatUint(uint64(userTickets), 10)
+	var userData = UserData {
+		firstName: firstName,
+		lastName: lastName,
+		email: email,
+		numberOfTickets: userTickets,
+	}
 
 	bookings = append(bookings, userData)
 
 	fmt.Printf("Thank you %v %v for booking %v tickets. You will recieve a confirmation email at %v\n", firstName, lastName, userTickets, email)
 	fmt.Printf("%v tickets remaining for %v\n", remainingTickets, cinemaName)
 }
+
+
