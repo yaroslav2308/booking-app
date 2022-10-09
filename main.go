@@ -6,53 +6,34 @@ import (
 	"strings"
 )
 
+// to print types of variables type %T
+// fmt.Printf("cinemaName type is %T\n", cinemaName)
+
+// varriables which were declared but not used are error
+
+// syntax sugar is using ':=' instead of 'var' 
+// (not working with consts and explicitly defined types)
+const cinemaTickets = 50
+var cinemaName = "cinema about Golang"
+var remainingTickets uint = 50
+
+// arrays (always fixed size)
+// var bookings [50]string
+
+// slice is below
+var bookings []string
+
 // starting point of every application is main function
 func main() {
-	// varriables which were declared but not used are error
-
-	// syntax sugar is using ':=' instead of 'var' 
-	// (not working with consts and explicitly defined types)
-	cinemaName := "cinema about Golang"
-	// simple const
-	const cinemaTickets = 50
-	var remainingTickets uint = 50
-	// arrays (always fixed size)
-	// var bookings [50]string
 	
-	// slice is below
-	var bookings []string
-
-	// to print types of variables type %T
-	// fmt.Printf("cinemaName type is %T\n", cinemaName)
-	
-	// fmt.Printf is for formating prints with variables
-	fmt.Printf("Welcome to the %v booking application\n", cinemaName)
-	fmt.Printf("We have total of %v tickets and %v are still available\n", cinemaTickets, remainingTickets)
-	fmt.Println("Get your tickets here to attend")
+	greetUsers()
 
 	// infinite for loop to book tickets 
 	for {
-		var firstName string
-		var lastName string
-		var email string
-		var userTickets uint
-	
-		// ask users for their names by using pointer (address of var where it located)
-		fmt.Println("Enter your first name: ")
-		fmt.Scan(&firstName)
-	
-		fmt.Println("Enter your last name: ")
-		fmt.Scan(&lastName)
-	
-		fmt.Println("Enter your email: ")
-		fmt.Scan(&email)
-	
-		fmt.Println("Amount of tickets to buy: ")
-		fmt.Scan(&userTickets)
 
-		isValidName := len(firstName) >= 2 && len(lastName) >= 2
-		isValidEmail := strings.Contains(email, "@")
-		isValidTicketNumber := userTickets > 0 && userTickets <= remainingTickets
+		firstName, lastName, email, userTickets := getUserInput()
+
+		isValidName, isValidEmail, isValidTicketNumber := validateUserInput(firstName, lastName, email, userTickets)
 		
 		if !isValidName || !isValidEmail || !isValidTicketNumber  {
 			if !isValidName {
@@ -68,21 +49,9 @@ func main() {
 			}
 			continue
 		}
-		remainingTickets = remainingTickets - userTickets
-		bookings = append(bookings, firstName + " " + lastName)
-	
-		fmt.Printf("Thank you %v %v for booking %v tickets. You will recieve a confirmation email at %v\n", firstName, lastName, userTickets, email)
-		fmt.Printf("%v tickets remaining for %v\n", remainingTickets, cinemaName)
-	
-		firstNames := []string{}
+		bookTicket(userTickets, firstName, lastName, email)
 
-		// for loop always need 2 values (index and element)
-		// we do not use index so it turns into underscore '_'
-		for _, booking := range bookings {
-			var names = strings.Fields(booking)
-			firstNames = append(firstNames, names[0])
-		}
-
+		firstNames := getFirstNames()
 		fmt.Printf("All bokings: %v\n", firstNames)
 
 		// if statement
@@ -92,6 +61,63 @@ func main() {
 			break
 		}
 	}
+}
 
+func greetUsers() {
+	// fmt.Printf is for formating prints with variables
+	fmt.Printf("Welcome to the %v booking application\n", cinemaName)
+	fmt.Printf("We have total of %v tickets and %v are still available\n", cinemaTickets, remainingTickets)
+	fmt.Println("Get your tickets here to attend")
+}
+
+func getFirstNames() []string {
+	firstNames := []string{}
+
+	// for loop always need 2 values (index and element)
+	// we do not use index so it turns into underscore '_'
+	for _, booking := range bookings {
+		var names = strings.Fields(booking)
+		firstNames = append(firstNames, names[0])
+	}
+
+	return firstNames
+}
+
+func validateUserInput(firstName string, lastName string, email string, userTickets uint) (bool, bool, bool) {
+	isValidName := len(firstName) >= 2 && len(lastName) >= 2
+	isValidEmail := strings.Contains(email, "@")
+	isValidTicketNumber := userTickets > 0 && userTickets <= remainingTickets
 	
+	// you can return any number of values
+	return isValidName, isValidEmail, isValidTicketNumber
+}
+
+func getUserInput() (string, string, string, uint) {
+	var firstName string
+	var lastName string
+	var email string
+	var userTickets uint
+
+	// ask users for their names by using pointer (address of var where it located)
+	fmt.Println("Enter your first name: ")
+	fmt.Scan(&firstName)
+
+	fmt.Println("Enter your last name: ")
+	fmt.Scan(&lastName)
+
+	fmt.Println("Enter your email: ")
+	fmt.Scan(&email)
+
+	fmt.Println("Amount of tickets to buy: ")
+	fmt.Scan(&userTickets)
+
+	return firstName, lastName, email, userTickets
+}
+
+func bookTicket(userTickets uint, firstName string, lastName string, email string) {
+	remainingTickets = remainingTickets - userTickets
+	bookings = append(bookings, firstName + " " + lastName)
+
+	fmt.Printf("Thank you %v %v for booking %v tickets. You will recieve a confirmation email at %v\n", firstName, lastName, userTickets, email)
+	fmt.Printf("%v tickets remaining for %v\n", remainingTickets, cinemaName)
 }
